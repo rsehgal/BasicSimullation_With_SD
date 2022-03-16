@@ -11,6 +11,7 @@
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4SDManager.hh"
+#include "MySensitiveDetector.h"
 #include <G4GDMLParser.hh>
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -50,6 +51,15 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
                                                    false,           // no boolean operation
                                                    0,               // copy number
                                                    checkOverlaps);  // overlaps checking
+  /*--------------------------------------------------------------------------*/
+  /* Making the logical volume sensitive
+  ** Commenting the below four line, disable the senstivity of the logical volume
+  */
+  /*--------------------------------------------------------------------------*/
+  MySensitiveDetector *mySD = new MySensitiveDetector("SensitiveDetector", "HitColSensitiveDetector");
+  G4SDManager *sdman        = G4SDManager::GetSDMpointer();
+  sdman->AddNewDetector(mySD);
+
   G4Box *trackingDetector = new G4Box("TrackingDetector",               // its name
                          50. * cm, 50. * cm, 0.5 * cm); // its size
 
@@ -58,6 +68,10 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
   G4LogicalVolume *logicalTrackingDetector = new G4LogicalVolume(trackingDetector,               // its solid
                                                   detector_mat,           // its material
                                                   "LogicalTrackingDetector"); // its name
+
+  //Making it Sensitive
+  logicalTrackingDetector->SetSensitiveDetector(mySD);
+
 
   unsigned short numOfLayers = 4;
   unsigned short numOfDetInEachLayer  = 1;
@@ -88,6 +102,7 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
                                                   false,                          // no boolean operation
                                                   detId,                              // copy number
                                                   checkOverlaps);
+		//mySD->InitializeAnalyzer(physicalDetName, layerId, detId);     
  	  }
   } 
 
