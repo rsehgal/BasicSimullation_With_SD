@@ -47,6 +47,7 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *step, G4TouchableHistory *toucha
     std::string geomName = std::string(touch1->GetVolume()->GetName());
     std::cout << BLUE << "GeomName : " << geomName << RESET << std::endl;
     newHit->SetName(geomName);
+    newHit->SetPosition(step->GetPreStepPoint()->GetPosition());
   }
 
   return true;
