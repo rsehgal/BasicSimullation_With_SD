@@ -25,8 +25,7 @@ MySensitiveDetector::MySensitiveDetector(G4String name, G4String collName)
   energyDep = 0.;
 }
 
-
-MySensitiveDetector::~MySensitiveDetector(){}
+MySensitiveDetector::~MySensitiveDetector() {}
 
 void MySensitiveDetector::Initialize(G4HCofThisEvent *hce) {
   evNo++;
@@ -38,12 +37,19 @@ void MySensitiveDetector::Initialize(G4HCofThisEvent *hce) {
 }
 
 G4bool MySensitiveDetector::ProcessHits(G4Step *step, G4TouchableHistory *touchableHist) {
-  /*MyHit *newHit = new MyHit();
+  MyHit *newHit = new MyHit();
   G4Track *track = step->GetTrack();
   bool isPrimary = (track->GetParentID() == 0);
-  G4TouchableHandle touch1 = step->GetPreStepPoint()->GetTouchableHandle();*/
 
-  return true;  
+  G4TouchableHandle touch1 = step->GetPreStepPoint()->GetTouchableHandle();
+
+  if (isPrimary && step->GetPreStepPoint()->GetStepStatus() == fGeomBoundary) {
+    std::string geomName = std::string(touch1->GetVolume()->GetName());
+    std::cout << BLUE << "GeomName : " << geomName << RESET << std::endl;
+    newHit->SetName(geomName);
+  }
+
+  return true;
 }
 
 void MySensitiveDetector::EndOfEvent(G4HCofThisEvent *HCE) {
@@ -55,8 +61,8 @@ void MySensitiveDetector::EndOfEvent(G4HCofThisEvent *HCE) {
     // fAnal->FillEnergy(energyDep);
     for (unsigned int i = 0; i < noOfHits; i++) {
       //(*hitsCollection)[i]->Print();
-      //fAnal->EnergyDepositInSteps((*hitsCollection)[i]->GetName(), (*hitsCollection)[i]->GetEnergyDep());
-      //fAnal->PreStepPositionInSteps((*hitsCollection)[i]->GetName(), (*hitsCollection)[i]->GetPosition());
+      // fAnal->EnergyDepositInSteps((*hitsCollection)[i]->GetName(), (*hitsCollection)[i]->GetEnergyDep());
+      // fAnal->PreStepPositionInSteps((*hitsCollection)[i]->GetName(), (*hitsCollection)[i]->GetPosition());
     }
   }
 
