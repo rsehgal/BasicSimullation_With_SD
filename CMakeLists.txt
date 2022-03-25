@@ -23,6 +23,8 @@ find_package(ROOT REQUIRED)
 #message(STATUS "ROOT LIB : ${ROOT_LIBRARIES}")
 #message(STATUS "ROOT INC : ${ROOT_INCLUDE_DIR}")
 
+find_package(TrackingLib REQUIRED)
+include_directories(${TrackingLib_INCLUDE_DIR})
 
 include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -48,7 +50,10 @@ file(GLOB headers ${CMAKE_SOURCE_DIR}/include/*.hh ${CMAKE_SOURCE_DIR}/include/*
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(main main.cc ${sources} ${headers})
-target_link_libraries(main ${Geant4_LIBRARIES} ${ROOT_LIBRARIES}) # ABData ${TrackingLib_LIBRARIES})
+target_link_libraries(main ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${TrackingLib_LIBRARIES})
+
+add_executable(ApplyCorrection ApplyCorrection.cpp )
+target_link_libraries(ApplyCorrection ${ROOT_LIBRARIES} )
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

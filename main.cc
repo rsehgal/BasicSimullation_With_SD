@@ -22,8 +22,18 @@
 
 //#include "OutputFile.h"
 //TFile *fp;
+
+#include "Output.h"
+#include "MuonReader.h"
+#include "EcoMug.h"
+#include "SingleTon_T.h"
+
 int main(int argc,char** argv)
 {
+  //SingleTon_T<EcoMug> *obj = SingleTon_T<EcoMug>::instance();
+  lite_interface::MuonReader::instance("Muons-50L.root");
+  Output::instance("acceptance.root");
+
   // Detect interactive mode (if no arguments) and define UI session
   //
   // fp = new TFile("anal.root","RECREATE");
@@ -88,6 +98,7 @@ G4RunManager *runManager = new G4RunManager;
   // owned and deleted by the run manager, so they should not be deleted 
   // in the main() program !
   
+  Output::instance()->Close();
   delete visManager;
   delete runManager;
   //fp->Close();

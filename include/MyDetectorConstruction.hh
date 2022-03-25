@@ -16,6 +16,7 @@ class MyDetectorConstruction : public G4VUserDetectorConstruction
     virtual ~MyDetectorConstruction();
 
     virtual G4VPhysicalVolume* Construct();
+    void CreateScintMatrix();
     
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
 
