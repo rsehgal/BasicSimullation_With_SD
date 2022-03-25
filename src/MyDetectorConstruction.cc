@@ -51,125 +51,69 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct() {
                                                    0,               // copy number
                                                    checkOverlaps);  // overlaps checking
 
-  //CreateScintMatrix();
+  // CreateScintMatrix();
 
   G4Material *bar_mat = nist->FindOrBuildMaterial("G4_Galactic");
-double halfXOneBar = 5*cm;
-double halfZOneBar = 5*cm;
-double halfYOneBar = 50. * cm;
 
-  // Lets try to build one bar of 10cm X 10cm X 10cm
-  G4Box *psBar                  = new G4Box("PsBar", halfXOneBar, halfYOneBar, halfZOneBar);
-  G4LogicalVolume *logicalPsBar = new G4LogicalVolume(psBar, bar_mat, "LogicalPsBar");
+  double pixelHalf = 1 * cm;
+  double pixelFull = 2 * pixelHalf;
+  unsigned int numOfPixelsInOneDirection = 100 * cm / pixelFull;
 
+  // Lets try to build one outer envelop of for n X n pixels
+  G4Box *pixelEnvelop = new G4Box("PixelEnvelop", 50 * cm, 50 * cm, 1. * cm);
+  G4LogicalVolume *pixelEnvelopLogical = new G4LogicalVolume(pixelEnvelop, bar_mat, "LogicalPixelEnvelop");
+
+  // Lets try to build one pixel to be placed in envelop
+  G4Box *pixel = new G4Box("Pixel", pixelHalf, pixelHalf, 0.5 * cm);
+  G4LogicalVolume *pixelLogical = new G4LogicalVolume(pixel, bar_mat, "LogicalPixel");
+
+  // G4Box *psBar = new G4Box("PsBar", halfXOneBar, halfYOneBar, halfZOneBar);
+  // G4LogicalVolume *logicalPsBar = new G4LogicalVolume(psBar, bar_mat, "LogicalPsBar");
 
   /*--------------------------------------------------------------------------*/
-  /* Making the logical volume sensitive
+  /* Making the Pixel volume sensitive
   ** Commenting the below four line, disable the senstivity of the logical volume
   */
   /*--------------------------------------------------------------------------*/
   MySensitiveDetector *mySD = new MySensitiveDetector("SensitiveDetector", "HitColSensitiveDetector");
-  G4SDManager *sdman        = G4SDManager::GetSDMpointer();
-  sdman->AddNewDetector(mySD);
-  //Making it Sensitive
-  logicalPsBar->SetSensitiveDetector(mySD);
-
-  int barsInX = 9;
-  int barsInZ = 10;
-  double yval = 0;
-  double xstart = -1. * barsInX * halfXOneBar;
-  double zstart = -1. * barsInZ * halfZOneBar;
-  std::cout << "XStart : " << xstart << " : YStart : " << zstart << std::endl;
-  int counter = -1;
-  G4RotationMatrix *yRot = new G4RotationMatrix; // Rotates X and Z axes only
-  // yRot-­>rotateY(M_PI/2.*rad);
-  yRot->rotateZ(1 * M_PI / 2. * rad);
-
-  for (unsigned int zindex = 0; zindex < barsInZ; zindex++) {
-    double zval = zstart + (2 * zindex + 1) * halfZOneBar;
-    for (unsigned int xindex = 0; xindex < barsInX; xindex++) {
-      counter++;
-      double xval = xstart + (2 * xindex +1) * halfXOneBar;
-      std::cout << xval << "," << yval << "," << zval << std::endl;
-if(!(zindex%2))
-new G4PVPlacement(0, G4ThreeVector(xval, yval, zval), logicalPsBar,
-                          "PhysicalPsBar-" + std::to_string(xindex) + "-" + std::to_string(zindex)+"-"+std::to_string(counter), logicWorld, false,
-                          counter, checkOverlaps);
-else{
-new G4PVPlacement(yRot, G4ThreeVector(0, xval, zval), logicalPsBar,
-                          "PhysicalPsBar-" + std::to_string(xindex) + "-" + std::to_string(zindex)+"-"+std::to_string(counter), logicWorld, false,
-                          counter, checkOverlaps);
-}
-      /*if (!(zindex % 2)) //&& yindex == 1)
-        new G4PVPlacement(0, G4ThreeVector(xval, yval, zval), logicalPsBar,
-                          "PhysicalPsBar-" + std::to_string(xindex) + "-" + std::to_string(zindex), logicWorld, false,
-                          counter, checkOverlaps);
-      else { //  if(yindex == 4)
-        new G4PVPlacement(yRot, G4ThreeVector(yval, xval, zval), logicalPsBar,
-                          "PhysicalPsBar-" + std::to_string(xindex) + "-" + std::to_string(zindex), logicWorld, false,
-                          counter, checkOverlaps);
-      }*/
-    }
-  }
-
-  
-  /*--------------------------------------------------------------------------*/
-  /* Making the logical volume sensitive
-  ** Commenting the below four line, disable the senstivity of the logical volume
-  */
-  /*--------------------------------------------------------------------------*/
-/*  MySensitiveDetector *mySD = new MySensitiveDetector("SensitiveDetector", "HitColSensitiveDetector");
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
   sdman->AddNewDetector(mySD);
-
-  G4Box *trackingDetector = new G4Box("TrackingDetector",            // its name
-                                      50. * cm, 50. * cm, 0.5 * cm); // its size
-
-  // G4Material* box_mat = nist->FindOrBuildMaterial("G4_Pb");
-  G4Material *detector_mat = nist->FindOrBuildMaterial("G4_Galactic");
-  G4LogicalVolume *logicalTrackingDetector = new G4LogicalVolume(trackingDetector,           // its solid
-                                                                 detector_mat,               // its material
-                                                                 "LogicalTrackingDetector"); // its name
-
   // Making it Sensitive
-  logicalTrackingDetector->SetSensitiveDetector(mySD);
+  pixelLogical->SetSensitiveDetector(mySD);
 
-  unsigned short numOfLayers = 4;
-  unsigned short numOfDetInEachLayer = 2;
-  std::string physicalDetName = "PhysicalTrackingDetector";
-  double spaceBetweenDetLayers = 30. * cm;
-  double offset = 30. * cm;
-  short counter = -1;
-  for (unsigned int i = 0; i < numOfLayers; i++) {
-    unsigned short layerId = i;
-    if (layerId == numOfLayers / 2)
-      counter = -1;
-    double zval = offset + (numOfLayers / 2 - 1) * spaceBetweenDetLayers;
-    if (layerId < numOfLayers / 2) {
-      zval *= -1.;
-    } else {
-      zval = offset;
-    }
-    counter++;
-    zval += (counter * spaceBetweenDetLayers);
-    for (unsigned int j = 0; j < numOfDetInEachLayer; j++) {
-      unsigned short detId = (numOfDetInEachLayer * layerId) + j;
-      physicalDetName = ("PhysicalTrackingDetector_" + std::to_string(layerId) + "_" + std::to_string(detId));
-      new G4PVPlacement(0,                           // no rotation
-                        G4ThreeVector(0., 0., zval), // at (0,0,0)
-                        logicalTrackingDetector,     // its logical volume
-                        physicalDetName,             // its name
-                        logicWorld,                  // its mother  volume
-                        false,                       // no boolean operation
-                        detId,                       // copy number
+  double xstart = -1. * pixelHalf * numOfPixelsInOneDirection;
+  double ystart = -1. * pixelHalf * numOfPixelsInOneDirection;
+  double pixelZVal = 0.;
+  unsigned int pixelIndex = 0;
+  unsigned int envelopIndex = 0;
+  for (unsigned int yindex = 0; yindex < numOfPixelsInOneDirection; yindex++) {
+    double yval = ystart + (2 * yindex + 1) * pixelHalf;
+    for (unsigned int xindex = 0; xindex < numOfPixelsInOneDirection; xindex++) {
+      double xval = xstart + (2 * xindex + 1) * pixelHalf;
+      new G4PVPlacement(0,                                                       // no rotation
+                        G4ThreeVector(xval,yval,pixelZVal),                                         // at (0,0,0)
+                        pixelLogical,                                            // its logical volume
+                        ("PhysicalPixel_" + std::to_string(pixelIndex)).c_str(), // its name
+                        pixelEnvelopLogical,                                     // its mother  volume
+                        false,                                                   // no boolean operation
+                        pixelIndex,                                              // copy number
                         checkOverlaps);
-      // mySD->InitializeAnalyzer(physicalDetName, layerId, detId);
+	pixelIndex++;
     }
   }
-*/
-  G4GDMLParser parser;
-  parser.Write("geom.gdml", physWorld);
-  return physWorld;
+
+
+  new G4PVPlacement(0,                                                       // no rotation
+                        G4ThreeVector(),                                         // at (0,0,0)
+                        pixelEnvelopLogical,                                            // its logical volume
+                        ("PhysicalPixelEnvelop_" + std::to_string(envelopIndex)).c_str(), // its name
+                        logicWorld,                                     // its mother  volume
+                        false,                                                   // no boolean operation
+                        envelopIndex,                                              // copy number
+                        checkOverlaps);
+  // G4GDMLParser parser;
+  // parser.Write("geom.gdml", physWorld);
+   return physWorld;
 }
 
 void MyDetectorConstruction::CreateScintMatrix() {
